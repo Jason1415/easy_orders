@@ -46,19 +46,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: Theme.of(context).textTheme.headline4!,
-      child: Container(
-        color: Colors.white,
-        alignment: Alignment.center,
-        child: const Text('Home Page'),
-      ),
-    );
-  }
-}

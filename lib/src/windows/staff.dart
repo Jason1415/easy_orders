@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import './kitchenLogin.dart';
+import './waitronLogin.dart';
 
 class StaffScreen extends StatefulWidget {
   const StaffScreen({super.key});
@@ -27,14 +29,24 @@ class _StaffScreenState extends State<StaffScreen> {
           margin: const EdgeInsets.all(25),
           child: MaterialButton(
             child: const Text('Kitchen'),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const KitchenLoginScreen()),
+              );
+            },
           ),
         ),
         Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(
             child: const Text('Waitron'),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const WaitronLoginScreen()),
+              );
+            },
           ),
         ),
       ])),

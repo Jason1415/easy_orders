@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 import 'package:flutter/material.dart';
 import './src/windows/home.dart';
-import './src/windows/patron.dart';
-import './src/windows/staff.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,14 +13,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Easy Orders',
       // MaterialApp contains our top-level Navigator
-      home: const HomeScreen(),
-      routes: <String, WidgetBuilder>{
-        '/patron': (BuildContext context) => const PatronScreen(),
-        '/staff': (BuildContext context) => const StaffScreen(),
-      },
+      home:  HomeScreen(),
     );
   }
 }

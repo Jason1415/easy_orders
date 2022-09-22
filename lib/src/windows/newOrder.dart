@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../src/Classes/Request.dart';
 import '../../src/windows/newRequest.dart';
+import 'orders.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'dart:convert';
 
 class NewOrderScreen extends StatefulWidget {
   const NewOrderScreen({super.key});
@@ -10,21 +13,12 @@ class NewOrderScreen extends StatefulWidget {
 }
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
+  List<Widget> orderListItems = [Text('Requests')];
+  List<Request> requests = [];
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final _requests = <Request>{};
   int _counter = 0;
 
-  void _doClick() {
-    setState(() {
-      _counter++;
-      items.add(CounterRow(_counter));
-    });
-  }
-
-  List<Widget> items = [
-    Text('You have pushed the button this many times:'),
-  ];
-
+  final myController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,6 +36,7 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
+            controller: myController,
             decoration: const InputDecoration(
               hintText: 'Table No.',
             ),
@@ -55,36 +50,64 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
           Container(
             height: 300,
             child: Builder(
-              builder: (context) => Center(child: MyDialog()),
+              builder: (context) => Center(child: MyDialog(listItems: orderListItems, requests: requests)),
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              submitOrder();
+            },
             child: const Text('Submit Order'),
           )
         ],
       ),
     );
   }
+
+  void submitOrder() async {
+    String tableNo = myController.text;
+    DatabaseReference starCountRef = FirebaseDatabase.instance.ref();
+    String s = '{\"tableno\":\"$tableNo\",\"status\":\"draft\",\"requests\":{';
+
+    for(int i = 0; i < requests.length; i++) {
+      s += '\"$i\":';
+      s += jsonEncode(requests[i]);
+      if (requests.length > 1 && requests.length - i > 1){
+        s += ',';
+      }
+    }
+    s += '}}';
+
+    int idNo = await getAllWidgets(starCountRef);
+    //int idNo = 0;
+
+    String id = 'order$idNo';
+    final body = jsonDecode(s);
+    DatabaseReference ref = FirebaseDatabase.instance.ref('orders/$id');
+    await ref.set(
+      body
+    );
+  }
+
+  Future getAllWidgets(DatabaseReference starCountRef) async {
+    final snapshot = await starCountRef.get();
+    if (snapshot.exists) {
+      return ((snapshot.value as dynamic)['orders'] as Map<dynamic, dynamic>).length;
+    } else {
+      return 0;
+    }
+  }
 }
 
 class MyDialog extends StatefulWidget {
-  const MyDialog({super.key});
+  List<Widget> listItems;
+  List<Request> requests;
+  MyDialog({super.key, required this.listItems, required this.requests});
   @override
   _MyDialogState createState() => _MyDialogState();
 }
 
 class _MyDialogState extends State<MyDialog> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-      items.add(Request('pizza', 'no ham', 2));
-    });
-  }
-
-  List<Widget> items = [Text('Requests')];
 
   Widget build(BuildContext context) {
     return Container(
@@ -94,23 +117,34 @@ class _MyDialogState extends State<MyDialog> {
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: items,
+                children: widget.listItems,
               ),
             ),
           ),
           actions: [
             OutlinedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NewRequestScreen()),
-                  );
+                  _addRequest(context);
+
                 },
                 child: Text('Add Request'),
                 //onPressed: _incrementCounter
             )
           ]),
     );
+  }
+
+  Future<void> _addRequest(BuildContext context) async {
+    final Request result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NewRequestScreen()),
+    );
+    if (!mounted) return;
+
+    setState(() {
+      widget.listItems.add(result);
+      widget.requests.add(result);
+    });
   }
 }
 

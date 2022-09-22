@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "88998250340",
+    "firebase_url": "https://easy-orders-123-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "easy-orders-123",
     "storage_bucket": "easy-orders-123.appspot.com"
   },
@@ -29,6 +30,13 @@
             {
               "client_id": "88998250340-6f7jh81lnhh0sneibjdpqttgd4v7tl36.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "88998250340-6lmdatcojnhnq06uua3aa0ihsqr47l2r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.easyOrders"
+              }
             }
           ]
         }

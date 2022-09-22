@@ -11,7 +11,10 @@ class NewRequestScreen extends StatefulWidget {
 }
 
 class _NewRequestScreenState extends State<NewRequestScreen> {
-    
+  List<Widget> notes = [const Text('Notes')];
+  List<String> notesStrings = [];
+  final myController = TextEditingController();
+  final myController2 = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,8 +32,21 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
+            controller: myController,
             decoration: const InputDecoration(
               hintText: 'Select Item',
+            ),
+            validator: (String? value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter some text';
+              }
+              return null;
+            },
+          ),
+          TextFormField(
+            controller: myController2,
+            decoration: const InputDecoration(
+              hintText: 'Count',
             ),
             validator: (String? value) {
               if (value == null || value.isEmpty) {
@@ -42,11 +58,13 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
           Container(
             height: 300,
             child: Builder(
-              builder: (context) => Center(child: MyDialog()),
+              builder: (context) {return Center(child: MyDialog(notes: notes, notesStrings: notesStrings));},
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pop(context, Request(myController.text, notesStrings.join(";"), int.parse(myController2.text)));
+            },
             child: const Text('Add Request'),
           )
         ],
@@ -56,13 +74,16 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
 }
 
 class MyDialog extends StatefulWidget {
-  const MyDialog({super.key});
+  final List<Widget> notes;
+  final List<String> notesStrings;
+
+  MyDialog({super.key, required this.notes, required this.notesStrings});
+  
   @override
   _MyDialogState createState() => _MyDialogState();
 }
 
 class _MyDialogState extends State<MyDialog> {
-  List<Widget> notes = [Text('Notes')];
   
   @override
   Widget build(BuildContext context) {
@@ -73,7 +94,7 @@ class _MyDialogState extends State<MyDialog> {
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: notes,
+                children: widget.notes,
               ),
             ),
           ),
@@ -129,7 +150,8 @@ class _MyDialogState extends State<MyDialog> {
     );
 
     setState(() {
-      notes.add(NotesRow(result));
+      widget.notes.add(NotesRow(result));
+      widget.notesStrings.add(result);
     });
   }
 }

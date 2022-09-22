@@ -8,6 +8,30 @@ class Request extends StatelessWidget {
   Request(this.item, this.notes, this.quantity);
 
   Widget build(BuildContext context) {
-    return Text('$quantity $item');
+    List<String> noteList = notes.split(';');
+    return Builder(builder: (context) {
+      if (notes == '') {
+        return Text('$quantity $item');
+
+      }
+      return Column(
+        children: [
+          Text('$quantity $item'),
+          Column(
+            children: [for (String s in noteList) Text(s)],
+          ),
+        ],
+      );
+    },);
   }
+
+  factory Request.fromJson(dynamic json) {
+    return Request(json[''] as String, json['notes'] as String, json['quantity'] as int);
+  }
+
+  Map toJson() => {
+    "item": item,
+    "notes":notes,
+    "quantity":quantity
+  };
 }

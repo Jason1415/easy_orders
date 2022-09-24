@@ -1,3 +1,4 @@
+import 'package:easy_orders/src/windows/staffLogin.dart';
 import 'package:flutter/material.dart';
 import './patron.dart';
 import './staff.dart';
@@ -39,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const StaffScreen()),
+                MaterialPageRoute(builder: (context) => const StaffLoginScreen()),
               );
             },
           ),

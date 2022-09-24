@@ -11,17 +11,14 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   List<Widget> orderWidgets = [];
   List<Order> orderItems = [];
   bool hasRefreshed = false;
   bool initialized = false;
-  DatabaseReference starCountRef = FirebaseDatabase.instance.ref();
+  DatabaseReference starCountRef = FirebaseDatabase.instance.ref('orders');
 
   @override
   Widget build(BuildContext context) {
-    getWidgets();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Orders'),
@@ -34,45 +31,25 @@ class _OrdersScreenState extends State<OrdersScreen> {
         ],
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        width: MediaQuery.of(context).size.width,
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: orderWidgets,
+          child: StreamBuilder(
+            stream: starCountRef.onValue,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return resultsToOrders(snapshot.data?.snapshot.value);
+              }
+              return Column();
+            },
           ),
         ),
       ),
     );
   }
 
-  void getAllWidgets() async {
-    final snapshot = await starCountRef.get();
-    if (snapshot.exists) {
-      resultsToOrders(snapshot.value);
-    } else {
-      print('No data available.');
-    }
-  }
-
-  void getWidgets() async {
-    if (!initialized) {
-      initialized = true;
-      starCountRef.onValue.listen((DatabaseEvent event) {
-        final data = event.snapshot.value;
-        resultsToOrders(data);
-        print('refresh');
-      });
-    }
-
-    if (!hasRefreshed) {
-      hasRefreshed = true;
-      getAllWidgets();
-      print('refresh 2');
-    }
-  }
-
-  void resultsToOrders(dynamic json) {
-    dynamic orders = json['orders'];
+  Widget resultsToOrders(dynamic json) {
+    dynamic orders = json;
     int len = (orders as Map<dynamic, dynamic>).length;
     List<Request> reqs = [];
     List<Order> ords = [];
@@ -81,9 +58,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
       reqs = [];
       int tableno = int.parse(orders['order$i']['tableno']);
       String status = orders['order$i']['status'];
+
       if (status == 'draft') {
         status = 'placed';
-        print('was draft');
       }
       dynamic req = orders['order$i']['requests'];
       int len2 = (req as List).length;
@@ -96,32 +73,91 @@ class _OrdersScreenState extends State<OrdersScreen> {
     }
     orderItems = ords;
 
-    setState(() {
-      orderWidgets = [];
-      for (int i = 0; i < orderItems.length; i++) {
-        orderWidgets.add(OrderContainer(
-          order: orderItems[i],
-          orderList: orderItems,
-          orderWidgets: orderWidgets,
-        ));
-      }
-    });
+    orderWidgets = [];
+    for (int i = 0; i < orderItems.length; i++) {
+      orderWidgets.add(OrderContainer(
+        order: orderItems[i],
+        orderList: orderItems,
+        orderWidgets: orderWidgets,
+        callback: _refreshOrders,
+        hasPermissions: false,
+      ));
+      orderWidgets.add(const SizedBox(height: 10));
+    }
+    if (orderWidgets.isEmpty) {
+      return Column();
+    }
+
+    return Column(
+      children: orderWidgets,
+    );
   }
 
-  String buildJson(Order ordr) {
-    return '';
+  /*
+  void _printOrderList(List<Order> l2p) {
+    print('List-----');
+    if (l2p.length == 0) {
+      print('empty');
+      print('-------');
+      return;
+    }
+    for(int i = 0; i < l2p.length; i++) {
+
+      print('\tTable ${l2p[i].tableNo}, ${l2p[i].requests.length} Requests');
+      if (l2p[i].requests.length != 0) {
+        for(int j = 0; j < l2p[i].requests.length; j++) {
+          print('\t\t${l2p[i].requests[j].quantity} ${l2p[i].requests[j].item}');
+        }
+      }
+    }
+    print('-------');
+  }*/
+
+  void _refreshOrders(Order ord) {
+    int index = -1;
+    for (int i = 0; i < orderItems.length; i++) {
+      if (orderItems[i] == ord) {
+        index = i;
+      }
+    }
+    if (index == -1) {
+    } else {
+      DatabaseReference ref =
+          FirebaseDatabase.instance.ref('orders/order$index');
+      ref.set(buildJson(ord));
+    }
+  }
+
+  dynamic buildJson(Order ordr) {
+    String tableNo = ordr.tableNo;
+    String s = '{"tableno":"$tableNo","status":"${ordr.status}","requests":{';
+
+    for (int i = 0; i < ordr.requests.length; i++) {
+      s += '"$i":';
+      s += jsonEncode(ordr.requests[i]);
+      if (ordr.requests.length > 1 && ordr.requests.length - i > 1) {
+        s += ',';
+      }
+    }
+    s += '}}';
+    return jsonDecode(s);
   }
 }
 
 class OrderContainer extends StatefulWidget {
+  final void Function(Order) callback;
   final Order order;
   List<Order> orderList;
   List<Widget> orderWidgets;
+  bool hasPermissions;
+
   OrderContainer(
       {super.key,
       required this.order,
       required this.orderList,
-      required this.orderWidgets});
+      required this.orderWidgets,
+      required this.callback,
+      required this.hasPermissions});
 
   @override
   State<OrderContainer> createState() => _OrderContainerState();
@@ -133,37 +169,29 @@ class _OrderContainerState extends State<OrderContainer> {
   @override
   Widget build(BuildContext context) {
     reqWidgets = [];
-    int orderCount = widget.order.requests.length;
-    String tableNo = widget.order.tableNo;
-    String status = widget.order.status;
     _populateRqestWidgets();
 
     return Material(
       child: InkWell(
-        child: Container(
-          height: 150,
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width,
+          //height: 150,
           child: widget.order.build(context),
         ),
         onTap: () async {
-          showDialogue(context);
+          String stat = getStatus(widget.order.status);
+          if (stat != 'Error') {
+            if (stat == 'Delivered') {
+              if (widget.hasPermissions) {
+                showDialogue(context);
+              }
+            } else {
+              showDialogue(context);
+            }
+          }
         },
       ),
     );
-  }
-
-  void _refreshOrders(Order ord) {
-
-    setState(() {
-      widget.orderList.remove(ord);
-      widget.orderWidgets = [];
-      for (int i = 0; i < widget.orderList.length; i++) {
-        widget.orderWidgets.add(OrderContainer(
-          order: widget.orderList[i],
-          orderList: widget.orderList,
-          orderWidgets: widget.orderWidgets,
-        ));
-      }
-    });
   }
 
   void _populateRqestWidgets() {
@@ -175,26 +203,26 @@ class _OrderContainerState extends State<OrderContainer> {
   void showDialogue(BuildContext context) async {
     String status = widget.order.status;
     String nextStatus = getStatus(status);
-    final result = await showDialog(
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        content: Center(
-          child: Column(
-            children: <Widget>[
-              Container(
-                child: Text('Promote to $nextStatus'),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () {
-                    _promoteStatus(context);
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Confirm'),
+        content: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                Text('Promote to $nextStatus'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _promoteStatus(context);
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Confirm'),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -203,11 +231,14 @@ class _OrderContainerState extends State<OrderContainer> {
 
   String getStatus(String s) {
     switch (s) {
-      case 'placed':
+      case 'Placed':
         return 'In Progress';
 
       case 'In Progress':
         return 'Completed';
+
+      case 'Completed':
+        return 'Delivered';
 
       default:
         return 'Error';
@@ -218,13 +249,19 @@ class _OrderContainerState extends State<OrderContainer> {
     setState(() {
       String s = widget.order.status;
       switch (s) {
-        case 'placed':
+        case 'Placed':
           widget.order.status = 'In Progress';
+          widget.callback(widget.order);
           break;
 
         case 'In Progress':
           widget.order.status = 'Completed';
-          _refreshOrders(widget.order);
+          widget.callback(widget.order);
+          break;
+
+        case 'Completed':
+          widget.order.status = 'Delivered';
+          widget.callback(widget.order);
           break;
 
         default:
@@ -251,40 +288,67 @@ class Order {
   factory Order.fromJson(dynamic json) {
     if (json['requests'] != null) {
       var tagObjsJson = json['requests'] as List;
-      List<Request> _tags =
+      List<Request> tags =
           tagObjsJson.map((tagJson) => Request.fromJson(tagJson)).toList();
-      return Order(json['tableno'] as String, json['status'] as String, _tags);
+      return Order(json['tableno'] as String, json['status'] as String, tags);
     } else {
       return Order(json['tableno'] as String, json['status'] as String, []);
     }
   }
 
-  @override
   Widget build(BuildContext context) {
     reqWidgets = [];
     for (Request r in requests) {
       reqWidgets.add(r);
     }
-    return Column(
-      children: [
-        Text('Table $tableNo'),
-        Builder(
-          builder: (context) {
-            if (requests.length > 0) {
-              return Column(
-                children: [
-                  Text(status),
-                  Text('Requests'),
-                  Column(
-                    children: reqWidgets,
+    return Container(
+      color: const Color.fromARGB(20, 50, 50, 50),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            height: 20,
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    child: Text('Table $tableNo'),
                   ),
-                ],
-              );
-            }
-            return Text(status);
-          },
-        ),
-      ],
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    alignment: Alignment.center,
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    child: Text(status),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    alignment: Alignment.centerRight,
+                    width: MediaQuery.of(context).size.width * 0.25,
+                    child: Text('${requests.length} Request(s)'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 10,
+          ),
+          Container(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: reqWidgets,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,21 +1,21 @@
-import 'package:easy_orders/src/windows/WaitronTransition.dart';
+import 'package:easy_orders/src/windows/staff.dart';
 import 'package:flutter/material.dart';
 
-class WaitronLoginScreen extends StatefulWidget {
-  const WaitronLoginScreen({super.key});
+class StaffLoginScreen extends StatefulWidget {
+  const StaffLoginScreen({super.key});
 
   @override
-  State<WaitronLoginScreen> createState() => _WaitronLoginScreenState();
+  State<StaffLoginScreen> createState() => _StaffLoginScreenScreenState();
 }
 
-class _WaitronLoginScreenState extends State<WaitronLoginScreen> {
+class _StaffLoginScreenScreenState extends State<StaffLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Waitron Login'),
+        title: const Text('Staff Login'),
         actions: [
           IconButton(
             icon: const Icon(Icons.list),
@@ -31,18 +31,7 @@ class _WaitronLoginScreenState extends State<WaitronLoginScreen> {
           children: <Widget>[
             TextFormField(
               decoration: const InputDecoration(
-                hintText: 'Enter your ID',
-              ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
-                }
-                return null;
-              },
-            ),
-            TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Enter your password',
+                hintText: 'Enter the password',
               ),
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
@@ -60,9 +49,7 @@ class _WaitronLoginScreenState extends State<WaitronLoginScreen> {
                   if (_formKey.currentState!.validate()) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const WaitronTransitionScreen()),
+                      MaterialPageRoute(builder: (context) => const StaffScreen()),
                     );
                   }
                 },

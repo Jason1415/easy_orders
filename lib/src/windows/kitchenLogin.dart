@@ -41,7 +41,7 @@ class _KitchenLoginScreenState extends State<KitchenLoginScreen> {
               },
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
               child: ElevatedButton(
                 onPressed: () {
                   // Validate will return true if the form is valid, or false if

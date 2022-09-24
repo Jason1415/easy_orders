@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../src/Classes/Request.dart';
 import '../../src/windows/newRequest.dart';
-import 'orders.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
@@ -13,10 +12,8 @@ class NewOrderScreen extends StatefulWidget {
 }
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
-  List<Widget> orderListItems = [Text('Requests')];
+  List<Widget> orderListItems = [const Text('Requests')];
   List<Request> requests = [];
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  int _counter = 0;
 
   final myController = TextEditingController();
   @override
@@ -47,17 +44,31 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
               return null;
             },
           ),
-          Container(
-            height: 300,
+          SizedBox(
             child: Builder(
-              builder: (context) => Center(child: MyDialog(listItems: orderListItems, requests: requests)),
+              builder: (context) => Center(
+                  child:
+                      MyDialog(listItems: orderListItems, requests: requests)),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              submitOrder();
-            },
-            child: const Text('Submit Order'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                if (myController.text.isNotEmpty &&
+                    int.tryParse(myController.text) != null) {
+                  if (requests.isNotEmpty) {
+                    submitOrder();
+                    Navigator.pop(context);
+                  } else {
+                    //TODO empty request
+                  }
+                } else {
+                  //TODO empty or invalid table number
+                }
+              },
+              child: const Text('Submit Order'),
+            ),
           )
         ],
       ),
@@ -67,12 +78,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   void submitOrder() async {
     String tableNo = myController.text;
     DatabaseReference starCountRef = FirebaseDatabase.instance.ref();
-    String s = '{\"tableno\":\"$tableNo\",\"status\":\"draft\",\"requests\":{';
+    String s = '{"tableno":"$tableNo","status":"Placed","requests":{';
 
-    for(int i = 0; i < requests.length; i++) {
-      s += '\"$i\":';
+    for (int i = 0; i < requests.length; i++) {
+      s += '"$i":';
       s += jsonEncode(requests[i]);
-      if (requests.length > 1 && requests.length - i > 1){
+      if (requests.length > 1 && requests.length - i > 1) {
         s += ',';
       }
     }
@@ -84,15 +95,15 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
     String id = 'order$idNo';
     final body = jsonDecode(s);
     DatabaseReference ref = FirebaseDatabase.instance.ref('orders/$id');
-    await ref.set(
-      body
-    );
+    await ref.set(body);
   }
 
   Future getAllWidgets(DatabaseReference starCountRef) async {
     final snapshot = await starCountRef.get();
     if (snapshot.exists) {
-      return ((snapshot.value as dynamic)['orders'] as Map<dynamic, dynamic>).length;
+      if ((snapshot.value as dynamic)['orders'] == null) return 0;
+      return ((snapshot.value as dynamic)['orders'] as Map<dynamic, dynamic>)
+          .length;
     } else {
       return 0;
     }
@@ -104,14 +115,13 @@ class MyDialog extends StatefulWidget {
   List<Request> requests;
   MyDialog({super.key, required this.listItems, required this.requests});
   @override
-  _MyDialogState createState() => _MyDialogState();
+  State<MyDialog> createState() => _MyDialogState();
 }
 
 class _MyDialogState extends State<MyDialog> {
-
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
+    return SizedBox(
       child: AlertDialog(
           content: SingleChildScrollView(
             child: Center(
@@ -123,12 +133,11 @@ class _MyDialogState extends State<MyDialog> {
           ),
           actions: [
             OutlinedButton(
-                onPressed: () {
-                  _addRequest(context);
-
-                },
-                child: Text('Add Request'),
-                //onPressed: _incrementCounter
+              onPressed: () {
+                _addRequest(context);
+              },
+              child: const Text('Add Request'),
+              //onPressed: _incrementCounter
             )
           ]),
     );
@@ -142,7 +151,7 @@ class _MyDialogState extends State<MyDialog> {
     if (!mounted) return;
 
     setState(() {
-      widget.listItems.add(result);
+      widget.listItems.add(result.newOrderLayout(context));
       widget.requests.add(result);
     });
   }
@@ -151,8 +160,9 @@ class _MyDialogState extends State<MyDialog> {
 class CounterRow extends StatelessWidget {
   final int count;
 
-  CounterRow(this.count);
+  const CounterRow(this.count, {super.key});
 
+  @override
   Widget build(BuildContext context) {
     return Text('$count', style: Theme.of(context).textTheme.headline4);
   }

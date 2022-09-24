@@ -1,7 +1,7 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../../src/Classes/Request.dart';
-import './newOrder.dart';
-import './testOut.dart';
+import '../Classes/menuItem.dart';
 
 class NewRequestScreen extends StatefulWidget {
   const NewRequestScreen({super.key});
@@ -13,8 +13,14 @@ class NewRequestScreen extends StatefulWidget {
 class _NewRequestScreenState extends State<NewRequestScreen> {
   List<Widget> notes = [const Text('Notes')];
   List<String> notesStrings = [];
+  late menuItem itemToAdd;
   final myController = TextEditingController();
   final myController2 = TextEditingController();
+  DatabaseReference starCountRef = FirebaseDatabase.instance.ref('items');
+  List<Widget> menuWidgets = [];
+  List<menuItem> menuItems = [];
+  String dropdownValue = 'Menu Item';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,18 +37,26 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          TextFormField(
-            controller: myController,
-            decoration: const InputDecoration(
-              hintText: 'Select Item',
-            ),
-            validator: (String? value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter some text';
-              }
-              return null;
-            },
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+                onPressed: () async {
+                  _awaitItem(context);
+                },
+                child: const Text('Select Item')),
           ),
+          /*DropdownButton<String>(
+            selectedItemBuilder: _getListBuilder(),
+            onTap: () async {
+              _awaitItem(context);
+            },
+            value: dropdownValue,
+            onChanged: (String? value) {
+              setState(() {
+                dropdownValue = value!;
+              });
+            },
+          ),*/
           TextFormField(
             controller: myController2,
             decoration: const InputDecoration(
@@ -55,21 +69,99 @@ class _NewRequestScreenState extends State<NewRequestScreen> {
               return null;
             },
           ),
-          Container(
-            height: 300,
-            child: Builder(
-              builder: (context) {return Center(child: MyDialog(notes: notes, notesStrings: notesStrings));},
+          Builder(
+            builder: (context) {
+              return Center(
+                  child: MyDialog(notes: notes, notesStrings: notesStrings));
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.pop(
+                    context,
+                    Request(itemToAdd.description, notesStrings.join(";"),
+                        int.parse(myController2.text)));
+              },
+              child: const Text('Add Request'),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context, Request(myController.text, notesStrings.join(";"), int.parse(myController2.text)));
-            },
-            child: const Text('Add Request'),
-          )
         ],
       ),
     );
+  }
+
+  List<DropdownMenuItem<String>> _getdropdownList() {
+    List<DropdownMenuItem<String>> dropItems = [
+      const DropdownMenuItem(
+        value: 'Menu Item',
+        child: Text('Menu Item'),
+      )
+    ];
+    for (int i = 0; i < menuItems.length; i++) {
+      dropItems.add(DropdownMenuItem(
+        value: '$i',
+        child: Text(menuItems[i].description),
+      ));
+    }
+    return dropItems;
+  }
+
+  /*List<DropdownMenuItem<String>> _getListBuilder(){
+
+  }*/
+
+  void _awaitItem(BuildContext context) async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: StreamBuilder(
+            stream: starCountRef.onValue,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return resultsToOrders(snapshot.data?.snapshot.value);
+              }
+              return Column();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget resultsToOrders(dynamic json) {
+    dynamic mItems = json;
+    int len = (mItems as Map<dynamic, dynamic>).length;
+
+    List<menuItem> mitems = [];
+
+    for (int i = 0; i < len; i++) {
+      String code = mItems['item$i']['code'];
+      String description = mItems['item$i']['description'];
+      double price = (mItems['item$i']['price']) * 1.0;
+      mitems.add(menuItem(code, description, price));
+    }
+
+    menuItems = mitems;
+
+    menuWidgets = [];
+    for (int i = 0; i < menuItems.length; i++) {
+      menuWidgets.add(ItemContainer(item: menuItems[i], callback: _setItem));
+    }
+    if (menuWidgets.isEmpty) {
+      return Column();
+    }
+
+    return Column(
+      children: menuWidgets,
+    );
+  }
+
+  void _setItem(menuItem itm) {
+    itemToAdd = itm;
+    Navigator.pop(context);
   }
 }
 
@@ -77,18 +169,16 @@ class MyDialog extends StatefulWidget {
   final List<Widget> notes;
   final List<String> notesStrings;
 
-  MyDialog({super.key, required this.notes, required this.notesStrings});
-  
+  const MyDialog({super.key, required this.notes, required this.notesStrings});
+
   @override
-  _MyDialogState createState() => _MyDialogState();
+  State<MyDialog> createState() => _MyDialogState();
 }
 
 class _MyDialogState extends State<MyDialog> {
-  
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 300,
+    return SizedBox(
       child: AlertDialog(
           content: SingleChildScrollView(
             child: Center(
@@ -100,8 +190,10 @@ class _MyDialogState extends State<MyDialog> {
           ),
           actions: [
             OutlinedButton(
-              onPressed: () async { _awaitNote(context);},
-              child: Text('Add Note'),
+              onPressed: () async {
+                _awaitNote(context);
+              },
+              child: const Text('Add Note'),
               //onPressed: _incrementCounter
             )
           ]),
@@ -109,7 +201,6 @@ class _MyDialogState extends State<MyDialog> {
   }
 
   void _awaitNote(BuildContext context) async {
-    String note = '';
     final myController = TextEditingController();
     final result = await showDialog(
       context: context,
@@ -159,8 +250,9 @@ class _MyDialogState extends State<MyDialog> {
 class CounterRow extends StatelessWidget {
   final int count;
 
-  CounterRow(this.count);
+  const CounterRow(this.count, {super.key});
 
+  @override
   Widget build(BuildContext context) {
     return Text('$count', style: Theme.of(context).textTheme.headline4);
   }

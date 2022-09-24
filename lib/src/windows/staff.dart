@@ -1,3 +1,4 @@
+import 'package:easy_orders/src/windows/newMenuItem.dart';
 import 'package:flutter/material.dart';
 import './kitchenLogin.dart';
 import './waitronLogin.dart';
@@ -28,7 +29,7 @@ class _StaffScreenState extends State<StaffScreen> {
         Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(
-            child: const Text('Kitchen'),
+            child: const Text('Kitchen Login'),
             onPressed: () {
               Navigator.push(
                 context,
@@ -40,7 +41,7 @@ class _StaffScreenState extends State<StaffScreen> {
         Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(
-            child: const Text('Waitron'),
+            child: const Text('Waitron Login'),
             onPressed: () {
               Navigator.push(
                 context,
@@ -49,6 +50,18 @@ class _StaffScreenState extends State<StaffScreen> {
             },
           ),
         ),
+            Container(
+              margin: const EdgeInsets.all(25),
+              child: MaterialButton(
+                child: const Text('New Menu Item'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NewMenuItemScreen()),
+                  );
+                },
+              ),
+            ),
       ])),
     );
   }

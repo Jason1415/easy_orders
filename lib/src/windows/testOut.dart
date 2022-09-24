@@ -19,31 +19,31 @@ class _TestOutState extends State<TestOut> {
       ),
       body: Center(
           child: Column(children: <Widget>[
-            Container(
-              margin: const EdgeInsets.all(25),
-              child: MaterialButton(
-                child: const Text('Patron'),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PatronScreen()),
-                  );
-                },
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.all(25),
-              child: MaterialButton(
-                child: const Text('Staff'),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const StaffScreen()),
-                  );
-                },
-              ),
-            ),
-          ])),
+        Container(
+          margin: const EdgeInsets.all(25),
+          child: MaterialButton(
+            child: const Text('Patron'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PatronScreen()),
+              );
+            },
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.all(25),
+          child: MaterialButton(
+            child: const Text('Staff'),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const StaffScreen()),
+              );
+            },
+          ),
+        ),
+      ])),
     );
   }
 }

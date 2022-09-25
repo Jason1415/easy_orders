@@ -1,7 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../../src/Classes/Request.dart';
-import '../Classes/menuItem.dart';
+import '../Classes/MenuIten.dart';
 
 class NewRequestScreen extends StatefulWidget {
   const NewRequestScreen({super.key});
@@ -241,8 +241,24 @@ class _MyDialogState extends State<MyDialog> {
     );
 
     setState(() {
-      widget.notes.add(NotesRow(result));
+      widget.notes.add(NotesRow(
+        result,
+        notes: widget.notes,
+        noteStrings: widget.notesStrings,
+        callback: _removeNote,
+      ));
       widget.notesStrings.add(result);
+    });
+  }
+
+  void _removeNote(String note) {
+    setState(() {
+      for (int i = 0; i < widget.notesStrings.length; i++) {
+        if (widget.notesStrings[i] == note) {
+          widget.notesStrings.removeAt(i);
+          widget.notes.removeAt(i + 1);
+        }
+      }
     });
   }
 }
@@ -258,13 +274,81 @@ class CounterRow extends StatelessWidget {
   }
 }
 
-class NotesRow extends StatelessWidget {
+class NotesRow extends StatefulWidget {
   final String note;
+  final List<Widget> notes;
+  final List<String> noteStrings;
+  final void Function(String) callback;
 
-  const NotesRow(this.note, {super.key});
+  const NotesRow(this.note,
+      {super.key,
+      required this.notes,
+      required this.noteStrings,
+      required this.callback});
 
   @override
+  State<NotesRow> createState() => _NotesRowState();
+}
+
+class _NotesRowState extends State<NotesRow> {
+  @override
   Widget build(BuildContext context) {
-    return Text(note);
+    return Material(
+      child: InkWell(
+        child: Container(
+          alignment: Alignment.centerLeft,
+          child: Column(
+            children: [
+              Container(
+                color: const Color.fromARGB(20, 50, 50, 50),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                height: 20,
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  width: MediaQuery.of(context).size.width,
+                  child: Text(widget.note),
+                ),
+              ),
+              Container(
+                height: 5,
+              ),
+            ],
+          ),
+        ),
+        onTap: () async {
+          _showDialogue(context);
+        },
+      ),
+    );
+  }
+
+  void _showDialogue(BuildContext context) async {
+    bool result = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                const Text('Delete Note'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                    child: const Text('Confirm'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (result) {
+      widget.callback(widget.note);
+    }
   }
 }

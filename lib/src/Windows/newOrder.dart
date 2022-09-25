@@ -155,15 +155,8 @@ class _MyDialogState extends State<MyDialog> {
       widget.requests.add(result);
     });
   }
-}
 
-class CounterRow extends StatelessWidget {
-  final int count;
+  void _removeRequest(String note) {
 
-  const CounterRow(this.count, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text('$count', style: Theme.of(context).textTheme.headline4);
   }
 }

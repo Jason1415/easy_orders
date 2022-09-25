@@ -4,7 +4,6 @@ import '../../src/Classes/Request.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../Classes/Order.dart';
 
-
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
 
@@ -145,5 +144,3 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return jsonDecode(s);
   }
 }
-
-

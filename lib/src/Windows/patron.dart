@@ -23,14 +23,14 @@ class _PatronScreenState extends State<PatronScreen> {
       ),
       body: Center(
           child: Column(children: <Widget>[
-            Container(
-              margin: const EdgeInsets.all(25),
-              child: MaterialButton(
-                child: const Text('TODO FORM'),
-                onPressed: () {},
-              ),
-            ),
-          ])),
+        Container(
+          margin: const EdgeInsets.all(25),
+          child: MaterialButton(
+            child: const Text('TODO FORM'),
+            onPressed: () {},
+          ),
+        ),
+      ])),
     );
   }
 }

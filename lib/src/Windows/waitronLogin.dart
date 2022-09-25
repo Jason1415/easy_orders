@@ -1,21 +1,21 @@
-import 'package:easy_orders/src/windows/staff.dart';
+import 'package:easy_orders/src/windows/waitronTransition.dart';
 import 'package:flutter/material.dart';
 
-class StaffLoginScreen extends StatefulWidget {
-  const StaffLoginScreen({super.key});
+class WaitronLoginScreen extends StatefulWidget {
+  const WaitronLoginScreen({super.key});
 
   @override
-  State<StaffLoginScreen> createState() => _StaffLoginScreenScreenState();
+  State<WaitronLoginScreen> createState() => _WaitronLoginScreenState();
 }
 
-class _StaffLoginScreenScreenState extends State<StaffLoginScreen> {
+class _WaitronLoginScreenState extends State<WaitronLoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Staff Login'),
+        title: const Text('Waitron Login'),
         actions: [
           IconButton(
             icon: const Icon(Icons.list),
@@ -31,7 +31,18 @@ class _StaffLoginScreenScreenState extends State<StaffLoginScreen> {
           children: <Widget>[
             TextFormField(
               decoration: const InputDecoration(
-                hintText: 'Enter the password',
+                hintText: 'Enter your ID',
+              ),
+              validator: (String? value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter some text';
+                }
+                return null;
+              },
+            ),
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Enter your password',
               ),
               validator: (String? value) {
                 if (value == null || value.isEmpty) {
@@ -41,7 +52,8 @@ class _StaffLoginScreenScreenState extends State<StaffLoginScreen> {
               },
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
               child: ElevatedButton(
                 onPressed: () {
                   // Validate will return true if the form is valid, or false if
@@ -49,7 +61,9 @@ class _StaffLoginScreenScreenState extends State<StaffLoginScreen> {
                   if (_formKey.currentState!.validate()) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const StaffScreen()),
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const WaitronTransitionScreen()),
                     );
                   }
                 },

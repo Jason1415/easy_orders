@@ -14,11 +14,11 @@ class OrderContainer extends StatefulWidget {
 
   OrderContainer(
       {super.key,
-        required this.order,
-        required this.orderList,
-        required this.orderWidgets,
-        required this.callback,
-        required this.hasPermissions});
+      required this.order,
+      required this.orderList,
+      required this.orderWidgets,
+      required this.callback,
+      required this.hasPermissions});
 
   @override
   State<OrderContainer> createState() => _OrderContainerState();
@@ -150,7 +150,7 @@ class Order {
     if (json['requests'] != null) {
       var tagObjsJson = json['requests'] as List;
       List<Request> tags =
-      tagObjsJson.map((tagJson) => Request.fromJson(tagJson)).toList();
+          tagObjsJson.map((tagJson) => Request.fromJson(tagJson)).toList();
       return Order(json['tableno'] as String, json['status'] as String, tags);
     } else {
       return Order(json['tableno'] as String, json['status'] as String, []);

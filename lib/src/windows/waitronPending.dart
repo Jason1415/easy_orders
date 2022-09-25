@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import '../Classes/Order.dart';
 import '../Classes/Request.dart';
-import 'orders.dart';
 
 class WaitronPendingScreen extends StatefulWidget {
   const WaitronPendingScreen({super.key});

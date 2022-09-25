@@ -1,8 +1,6 @@
 import 'package:easy_orders/src/windows/staffLogin.dart';
 import 'package:flutter/material.dart';
 import './patron.dart';
-import './staff.dart';
-import '../../src/Classes/globals.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

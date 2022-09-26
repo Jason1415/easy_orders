@@ -20,7 +20,7 @@ class _WaitronPendingScreenState extends State<WaitronPendingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Easy Orders'),
+        title: const Text('Pending Orders'),
       ),
       body: Container(
         padding: const EdgeInsets.symmetric(vertical: 16.0),

@@ -5,7 +5,8 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:convert';
 
 class NewOrderScreen extends StatefulWidget {
-  const NewOrderScreen({super.key});
+  final bool isPatronOrder;
+  const NewOrderScreen({super.key, required this.isPatronOrder});
 
   @override
   State<NewOrderScreen> createState() => _NewOrderScreenState();
@@ -78,7 +79,12 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
   void submitOrder() async {
     String tableNo = myController.text;
     DatabaseReference starCountRef = FirebaseDatabase.instance.ref();
-    String s = '{"tableno":"$tableNo","status":"Placed","requests":{';
+    String status = 'Placed';
+    if (widget.isPatronOrder) {
+      status = "Requested";
+    }
+
+    String s = '{"tableno":"$tableNo","status":"$status","requests":{';
 
     for (int i = 0; i < requests.length; i++) {
       s += '"$i":';
@@ -151,12 +157,20 @@ class _MyDialogState extends State<MyDialog> {
     if (!mounted) return;
 
     setState(() {
-      widget.listItems.add(result.newOrderLayout(context));
+      widget.listItems.add(result.newOrderLayout(context, _removeRequest, result));
       widget.requests.add(result);
     });
   }
 
-  void _removeRequest(String note) {
-
+  void _removeRequest(Request r) {
+    setState(() {
+      for (int i = 0; i < widget.requests.length; i++) {
+        if (widget.requests[i] == r) {
+          widget.requests.removeAt(i);
+          widget.listItems.removeAt(i + 1);
+        }
+      }
+    });
   }
 }
+

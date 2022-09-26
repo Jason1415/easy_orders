@@ -1,15 +1,74 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Request extends StatelessWidget {
   final String item;
   final String notes;
   final int quantity;
+  late Request thisReq;
+  late void Function(Request) callback;
 
   Request(this.item, this.notes, this.quantity);
 
-  Widget newOrderLayout(BuildContext context) {
-    return Text('$quantity $item');
+  Widget newOrderLayout(BuildContext context, Function(Request) callback, Request r) {
+    thisReq = r;
+    this.callback = callback;
+    return Material(
+      child: InkWell(
+        child: Container(
+          alignment: Alignment.centerLeft,
+          child: Column(
+            children: [
+              Container(
+                color: const Color.fromARGB(20, 50, 50, 50),
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                height: 20,
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  width: MediaQuery.of(context).size.width,
+                  child: Text('$quantity $item'),
+                ),
+              ),
+              Container(
+                height: 5,
+              ),
+            ],
+          ),
+        ),
+        onTap: () async {
+          _showDialogue(context);
+        },
+      ),
+    );
+  }
+
+  void _showDialogue(BuildContext context) async {
+    bool result = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                const Text('Delete Note'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, true);
+                    },
+                    child: const Text('Confirm'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (result) {
+      callback(thisReq);
+    }
   }
 
   Widget build(BuildContext context) {

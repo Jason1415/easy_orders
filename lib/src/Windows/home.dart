@@ -1,3 +1,4 @@
+import 'package:easy_orders/src/Windows/newOrder.dart';
 import 'package:easy_orders/src/windows/staffLogin.dart';
 import 'package:flutter/material.dart';
 import './patron.dart';
@@ -19,18 +20,18 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Center(
           child: Column(children: <Widget>[
-        Container(
+        /*Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(
             child: const Text('Patron'),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const PatronScreen()),
+                MaterialPageRoute(builder: (context) => const NewOrderScreen(isPatronOrder: true)),
               );
             },
           ),
-        ),
+        ),*/
         Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(

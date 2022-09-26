@@ -146,67 +146,65 @@ class Order {
     return jsonreqs;
   }
 
-  factory Order.fromJson(dynamic json) {
-    if (json['requests'] != null) {
-      var tagObjsJson = json['requests'] as List;
-      List<Request> tags =
-          tagObjsJson.map((tagJson) => Request.fromJson(tagJson)).toList();
-      return Order(json['tableno'] as String, json['status'] as String, tags);
-    } else {
-      return Order(json['tableno'] as String, json['status'] as String, []);
-    }
-  }
-
   Widget build(BuildContext context) {
     reqWidgets = [];
     for (Request r in requests) {
       reqWidgets.add(r);
     }
     return Container(
-      color: const Color.fromARGB(20, 50, 50, 50),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            height: 20,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    alignment: Alignment.centerLeft,
-                    width: MediaQuery.of(context).size.width * 0.25,
-                    child: Text('Table $tableNo'),
+            color: const Color.fromARGB(20, 50, 50, 50),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  height: 20,
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          alignment: Alignment.centerLeft,
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          child: Text('Table $tableNo'),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          alignment: Alignment.center,
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          child: Text(status),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          alignment: Alignment.centerRight,
+                          width: MediaQuery.of(context).size.width * 0.25,
+                          child: Text('${requests.length} Request(s)'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    alignment: Alignment.center,
-                    width: MediaQuery.of(context).size.width * 0.25,
-                    child: Text(status),
-                  ),
+                Container(
+                  height: 10,
                 ),
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    alignment: Alignment.centerRight,
-                    width: MediaQuery.of(context).size.width * 0.25,
-                    child: Text('${requests.length} Request(s)'),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: reqWidgets,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            height: 10,
-          ),
-          Container(
-            alignment: Alignment.centerLeft,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: reqWidgets,
-            ),
+            height: 5,
           ),
         ],
       ),

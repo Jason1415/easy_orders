@@ -1,4 +1,3 @@
-import 'package:easy_orders/src/Windows/patron.dart';
 import 'package:easy_orders/src/windows/newOrder.dart';
 import 'package:easy_orders/src/windows/waitronPending.dart';
 import 'package:flutter/material.dart';
@@ -27,11 +26,11 @@ class _WaitronTransitionScreenState extends State<WaitronTransitionScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const NewOrderScreen()),
+                MaterialPageRoute(builder: (context) => const NewOrderScreen(isPatronOrder: false)),
               );
             },
           ),
-        ),
+        ),/*
         Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(
@@ -43,7 +42,7 @@ class _WaitronTransitionScreenState extends State<WaitronTransitionScreen> {
               );
             },
           ),
-        ),
+        ),*/
         Container(
           margin: const EdgeInsets.all(25),
           child: MaterialButton(

@@ -61,8 +61,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
       String status = orders['order$i']['status'];
 
       if (status == 'draft') {
-        status = 'placed';
-      }
+        status = 'Placed';
+      }/* else if (status == 'Requested') {
+        continue;
+      }*/
+
       dynamic req = orders['order$i']['requests'];
       int len2 = (req as List).length;
       for (int j = 0; j < len2; j++) {
